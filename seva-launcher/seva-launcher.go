@@ -39,25 +39,20 @@ var content embed.FS
 //go:embed docker-compose
 var docker_compose_bin []byte
 
-// Checks if docker compose is present in the file-system
-func is_docker_compose_installed() bool {
-	cmd := exec.Command("docker-compose", "-v")
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Println("Docker-compose is either not installed or cannot be executed")
-		log.Println(err)
-		log.Println("Using local install for now")
-		return false
-	}
-	return true
-}
-
 func prepare_compose() string {
-	if !is_docker_compose_installed() {
-		ioutil.WriteFile("docker-compose", docker_compose_bin, 0755)
-		return "./docker-compose"
-	}
-	return "docker-compose"
+    // Try V2 first
+    cmd := exec.Command("docker", "compose", "version")
+    if err := cmd.Run(); err == nil {
+        return "docker"
+    }
+    // Try V1
+    cmd = exec.Command("docker-compose", "-v")
+    if err := cmd.Run(); err == nil {
+        return "docker-compose"
+    }
+    // Neither installed, use bundled binary
+	ioutil.WriteFile("docker-compose", docker_compose_bin, 0755)
+	return "./docker-compose"
 }
 
 func setup_working_directory() {

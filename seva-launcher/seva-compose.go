@@ -41,7 +41,12 @@ type Containers []struct {
 
 func start_app(command WebSocketCommand) WebSocketCommand {
 	log.Println("Starting selected app")
+
 	cmd := exec.Command(docker_compose, "-p", "seva-launcher", "up", "-d")
+	if docker_compose == "docker" {
+		cmd = exec.Command(docker_compose, "compose", "-p", "seva-launcher", "up", "-d")
+	}
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println("Failed to start selected app!")
@@ -168,7 +173,11 @@ func apply_proxy_settings(proxy_settings ProxySettings) {
 
 func stop_app(command WebSocketCommand) WebSocketCommand {
 	log.Println("Stopping selected app")
+
 	cmd := exec.Command(docker_compose, "-p", "seva-launcher", "down", "--remove-orphans")
+	if docker_compose == "docker" {
+		cmd = exec.Command(docker_compose, "compose", "-p", "seva-launcher", "down", "--remove-orphans")
+	}
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println("Failed to stop selected app! (It may not be running!)")
@@ -226,7 +235,11 @@ func load_app(command WebSocketCommand) WebSocketCommand {
 func is_running(command WebSocketCommand) WebSocketCommand {
 	name := command.Arguments[0]
 	log.Println("Checking if " + name + " is running")
+
 	cmd := exec.Command(docker_compose, "-p", "seva-launcher", "ps", "--format", "json")
+	if docker_compose == "docker" {
+		cmd = exec.Command(docker_compose, "compose", "-p", "seva-launcher", "ps", "--format", "json")
+	}
 	output, err := cmd.Output()
 	if err != nil {
 		log.Println("Failed to check if app is running!")
